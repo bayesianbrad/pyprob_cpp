@@ -13,6 +13,7 @@
 
 namespace pyprob_cpp
 {
+  std::default_random_engine generator;
   zmq::context_t zmqContext = zmq::context_t(1);
   zmq::socket_t zmqSocket = zmq::socket_t(zmqContext, ZMQ_REP);
   bool zmqSocketConnected = false;

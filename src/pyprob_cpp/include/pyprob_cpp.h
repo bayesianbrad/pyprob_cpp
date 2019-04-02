@@ -1,5 +1,5 @@
-#ifndef pyprob_cpp_H
-#define pyprob_cpp_H
+// #ifndef pyprob_cpp_H
+// #define pyprob_cpp_H
 #include <string>
 #include "xtensor/xarray.hpp"
 #include "xtensor/xio.hpp"
@@ -108,5 +108,4 @@ namespace pyprob_cpp
 
   std::string extractAddress();
 }
-
-#endif
+//#endif

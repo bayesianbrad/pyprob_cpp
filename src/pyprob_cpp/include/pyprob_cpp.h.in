@@ -1,5 +1,3 @@
-#ifndef pyprob_cpp_H
-#define pyprob_cpp_H
 #include <string>
 #include "xtensor/xarray.hpp"
 #include "xtensor/xio.hpp"
@@ -15,7 +13,7 @@
 
 namespace pyprob_cpp
 {
-  std::default_random_engine generator;
+  extern std::default_random_engine generator;
   namespace distributions
   {
     class Distribution
@@ -109,4 +107,3 @@ namespace pyprob_cpp
   std::string extractAddress();
 }
 
-#endif
