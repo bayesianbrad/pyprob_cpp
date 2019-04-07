@@ -42,6 +42,16 @@ struct Categorical;
 
 struct Poisson;
 
+struct Beta;
+
+struct Gamma;
+
+struct LogNormal;
+
+struct Exponential;
+
+struct Weibull;
+
 enum MessageBody {
   MessageBody_NONE = 0,
   MessageBody_Handshake = 1,
@@ -97,6 +107,7 @@ inline const char * const *EnumNamesMessageBody() {
 }
 
 inline const char *EnumNameMessageBody(MessageBody e) {
+  if (e < MessageBody_NONE || e > MessageBody_Reset) return "";
   const size_t index = static_cast<int>(e);
   return EnumNamesMessageBody()[index];
 }
@@ -158,17 +169,27 @@ enum Distribution {
   Distribution_Uniform = 2,
   Distribution_Categorical = 3,
   Distribution_Poisson = 4,
+  Distribution_Beta = 5,
+  Distribution_Gamma = 6,
+  Distribution_LogNormal = 7,
+  Distribution_Exponential = 8,
+  Distribution_Weibull = 9,
   Distribution_MIN = Distribution_NONE,
-  Distribution_MAX = Distribution_Poisson
+  Distribution_MAX = Distribution_Weibull
 };
 
-inline const Distribution (&EnumValuesDistribution())[5] {
+inline const Distribution (&EnumValuesDistribution())[10] {
   static const Distribution values[] = {
     Distribution_NONE,
     Distribution_Normal,
     Distribution_Uniform,
     Distribution_Categorical,
-    Distribution_Poisson
+    Distribution_Poisson,
+    Distribution_Beta,
+    Distribution_Gamma,
+    Distribution_LogNormal,
+    Distribution_Exponential,
+    Distribution_Weibull
   };
   return values;
 }
@@ -180,12 +201,18 @@ inline const char * const *EnumNamesDistribution() {
     "Uniform",
     "Categorical",
     "Poisson",
+    "Beta",
+    "Gamma",
+    "LogNormal",
+    "Exponential",
+    "Weibull",
     nullptr
   };
   return names;
 }
 
 inline const char *EnumNameDistribution(Distribution e) {
+  if (e < Distribution_NONE || e > Distribution_Weibull) return "";
   const size_t index = static_cast<int>(e);
   return EnumNamesDistribution()[index];
 }
@@ -210,11 +237,31 @@ template<> struct DistributionTraits<Poisson> {
   static const Distribution enum_value = Distribution_Poisson;
 };
 
+template<> struct DistributionTraits<Beta> {
+  static const Distribution enum_value = Distribution_Beta;
+};
+
+template<> struct DistributionTraits<Gamma> {
+  static const Distribution enum_value = Distribution_Gamma;
+};
+
+template<> struct DistributionTraits<LogNormal> {
+  static const Distribution enum_value = Distribution_LogNormal;
+};
+
+template<> struct DistributionTraits<Exponential> {
+  static const Distribution enum_value = Distribution_Exponential;
+};
+
+template<> struct DistributionTraits<Weibull> {
+  static const Distribution enum_value = Distribution_Weibull;
+};
+
 bool VerifyDistribution(flatbuffers::Verifier &verifier, const void *obj, Distribution type);
 bool VerifyDistributionVector(flatbuffers::Verifier &verifier, const flatbuffers::Vector<flatbuffers::Offset<void>> *values, const flatbuffers::Vector<uint8_t> *types);
 
 struct Message FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_BODY_TYPE = 4,
     VT_BODY = 6
   };
@@ -343,7 +390,7 @@ inline flatbuffers::Offset<Message> CreateMessage(
 }
 
 struct Tensor FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_DATA = 4,
     VT_SHAPE = 6
   };
@@ -398,14 +445,16 @@ inline flatbuffers::Offset<Tensor> CreateTensorDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
     const std::vector<double> *data = nullptr,
     const std::vector<int32_t> *shape = nullptr) {
+  auto data__ = data ? _fbb.CreateVector<double>(*data) : 0;
+  auto shape__ = shape ? _fbb.CreateVector<int32_t>(*shape) : 0;
   return ppx::CreateTensor(
       _fbb,
-      data ? _fbb.CreateVector<double>(*data) : 0,
-      shape ? _fbb.CreateVector<int32_t>(*shape) : 0);
+      data__,
+      shape__);
 }
 
 struct Handshake FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_SYSTEM_NAME = 4
   };
   const flatbuffers::String *system_name() const {
@@ -448,13 +497,14 @@ inline flatbuffers::Offset<Handshake> CreateHandshake(
 inline flatbuffers::Offset<Handshake> CreateHandshakeDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
     const char *system_name = nullptr) {
+  auto system_name__ = system_name ? _fbb.CreateString(system_name) : 0;
   return ppx::CreateHandshake(
       _fbb,
-      system_name ? _fbb.CreateString(system_name) : 0);
+      system_name__);
 }
 
 struct HandshakeResult FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_SYSTEM_NAME = 4,
     VT_MODEL_NAME = 6
   };
@@ -509,10 +559,12 @@ inline flatbuffers::Offset<HandshakeResult> CreateHandshakeResultDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
     const char *system_name = nullptr,
     const char *model_name = nullptr) {
+  auto system_name__ = system_name ? _fbb.CreateString(system_name) : 0;
+  auto model_name__ = model_name ? _fbb.CreateString(model_name) : 0;
   return ppx::CreateHandshakeResult(
       _fbb,
-      system_name ? _fbb.CreateString(system_name) : 0,
-      model_name ? _fbb.CreateString(model_name) : 0);
+      system_name__,
+      model_name__);
 }
 
 struct Run FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
@@ -544,7 +596,7 @@ inline flatbuffers::Offset<Run> CreateRun(
 }
 
 struct RunResult FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_RESULT = 4
   };
   const Tensor *result() const {
@@ -585,7 +637,7 @@ inline flatbuffers::Offset<RunResult> CreateRunResult(
 }
 
 struct Sample FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_ADDRESS = 4,
     VT_NAME = 6,
     VT_DISTRIBUTION_TYPE = 8,
@@ -617,6 +669,21 @@ struct Sample FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   }
   const Poisson *distribution_as_Poisson() const {
     return distribution_type() == Distribution_Poisson ? static_cast<const Poisson *>(distribution()) : nullptr;
+  }
+  const Beta *distribution_as_Beta() const {
+    return distribution_type() == Distribution_Beta ? static_cast<const Beta *>(distribution()) : nullptr;
+  }
+  const Gamma *distribution_as_Gamma() const {
+    return distribution_type() == Distribution_Gamma ? static_cast<const Gamma *>(distribution()) : nullptr;
+  }
+  const LogNormal *distribution_as_LogNormal() const {
+    return distribution_type() == Distribution_LogNormal ? static_cast<const LogNormal *>(distribution()) : nullptr;
+  }
+  const Exponential *distribution_as_Exponential() const {
+    return distribution_type() == Distribution_Exponential ? static_cast<const Exponential *>(distribution()) : nullptr;
+  }
+  const Weibull *distribution_as_Weibull() const {
+    return distribution_type() == Distribution_Weibull ? static_cast<const Weibull *>(distribution()) : nullptr;
   }
   bool control() const {
     return GetField<uint8_t>(VT_CONTROL, 1) != 0;
@@ -653,6 +720,26 @@ template<> inline const Categorical *Sample::distribution_as<Categorical>() cons
 
 template<> inline const Poisson *Sample::distribution_as<Poisson>() const {
   return distribution_as_Poisson();
+}
+
+template<> inline const Beta *Sample::distribution_as<Beta>() const {
+  return distribution_as_Beta();
+}
+
+template<> inline const Gamma *Sample::distribution_as<Gamma>() const {
+  return distribution_as_Gamma();
+}
+
+template<> inline const LogNormal *Sample::distribution_as<LogNormal>() const {
+  return distribution_as_LogNormal();
+}
+
+template<> inline const Exponential *Sample::distribution_as<Exponential>() const {
+  return distribution_as_Exponential();
+}
+
+template<> inline const Weibull *Sample::distribution_as<Weibull>() const {
+  return distribution_as_Weibull();
 }
 
 struct SampleBuilder {
@@ -714,10 +801,12 @@ inline flatbuffers::Offset<Sample> CreateSampleDirect(
     flatbuffers::Offset<void> distribution = 0,
     bool control = true,
     bool replace = false) {
+  auto address__ = address ? _fbb.CreateString(address) : 0;
+  auto name__ = name ? _fbb.CreateString(name) : 0;
   return ppx::CreateSample(
       _fbb,
-      address ? _fbb.CreateString(address) : 0,
-      name ? _fbb.CreateString(name) : 0,
+      address__,
+      name__,
       distribution_type,
       distribution,
       control,
@@ -725,7 +814,7 @@ inline flatbuffers::Offset<Sample> CreateSampleDirect(
 }
 
 struct SampleResult FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_RESULT = 4
   };
   const Tensor *result() const {
@@ -766,7 +855,7 @@ inline flatbuffers::Offset<SampleResult> CreateSampleResult(
 }
 
 struct Observe FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_ADDRESS = 4,
     VT_NAME = 6,
     VT_DISTRIBUTION_TYPE = 8,
@@ -797,6 +886,21 @@ struct Observe FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   }
   const Poisson *distribution_as_Poisson() const {
     return distribution_type() == Distribution_Poisson ? static_cast<const Poisson *>(distribution()) : nullptr;
+  }
+  const Beta *distribution_as_Beta() const {
+    return distribution_type() == Distribution_Beta ? static_cast<const Beta *>(distribution()) : nullptr;
+  }
+  const Gamma *distribution_as_Gamma() const {
+    return distribution_type() == Distribution_Gamma ? static_cast<const Gamma *>(distribution()) : nullptr;
+  }
+  const LogNormal *distribution_as_LogNormal() const {
+    return distribution_type() == Distribution_LogNormal ? static_cast<const LogNormal *>(distribution()) : nullptr;
+  }
+  const Exponential *distribution_as_Exponential() const {
+    return distribution_type() == Distribution_Exponential ? static_cast<const Exponential *>(distribution()) : nullptr;
+  }
+  const Weibull *distribution_as_Weibull() const {
+    return distribution_type() == Distribution_Weibull ? static_cast<const Weibull *>(distribution()) : nullptr;
   }
   const Tensor *value() const {
     return GetPointer<const Tensor *>(VT_VALUE);
@@ -830,6 +934,26 @@ template<> inline const Categorical *Observe::distribution_as<Categorical>() con
 
 template<> inline const Poisson *Observe::distribution_as<Poisson>() const {
   return distribution_as_Poisson();
+}
+
+template<> inline const Beta *Observe::distribution_as<Beta>() const {
+  return distribution_as_Beta();
+}
+
+template<> inline const Gamma *Observe::distribution_as<Gamma>() const {
+  return distribution_as_Gamma();
+}
+
+template<> inline const LogNormal *Observe::distribution_as<LogNormal>() const {
+  return distribution_as_LogNormal();
+}
+
+template<> inline const Exponential *Observe::distribution_as<Exponential>() const {
+  return distribution_as_Exponential();
+}
+
+template<> inline const Weibull *Observe::distribution_as<Weibull>() const {
+  return distribution_as_Weibull();
 }
 
 struct ObserveBuilder {
@@ -885,10 +1009,12 @@ inline flatbuffers::Offset<Observe> CreateObserveDirect(
     Distribution distribution_type = Distribution_NONE,
     flatbuffers::Offset<void> distribution = 0,
     flatbuffers::Offset<Tensor> value = 0) {
+  auto address__ = address ? _fbb.CreateString(address) : 0;
+  auto name__ = name ? _fbb.CreateString(name) : 0;
   return ppx::CreateObserve(
       _fbb,
-      address ? _fbb.CreateString(address) : 0,
-      name ? _fbb.CreateString(name) : 0,
+      address__,
+      name__,
       distribution_type,
       distribution,
       value);
@@ -923,7 +1049,7 @@ inline flatbuffers::Offset<ObserveResult> CreateObserveResult(
 }
 
 struct Tag FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_ADDRESS = 4,
     VT_NAME = 6,
     VT_VALUE = 8
@@ -990,10 +1116,12 @@ inline flatbuffers::Offset<Tag> CreateTagDirect(
     const char *address = nullptr,
     const char *name = nullptr,
     flatbuffers::Offset<Tensor> value = 0) {
+  auto address__ = address ? _fbb.CreateString(address) : 0;
+  auto name__ = name ? _fbb.CreateString(name) : 0;
   return ppx::CreateTag(
       _fbb,
-      address ? _fbb.CreateString(address) : 0,
-      name ? _fbb.CreateString(name) : 0,
+      address__,
+      name__,
       value);
 }
 
@@ -1054,7 +1182,7 @@ inline flatbuffers::Offset<Reset> CreateReset(
 }
 
 struct Normal FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_MEAN = 4,
     VT_STDDEV = 6
   };
@@ -1106,7 +1234,7 @@ inline flatbuffers::Offset<Normal> CreateNormal(
 }
 
 struct Uniform FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_LOW = 4,
     VT_HIGH = 6
   };
@@ -1158,7 +1286,7 @@ inline flatbuffers::Offset<Uniform> CreateUniform(
 }
 
 struct Categorical FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_PROBS = 4
   };
   const Tensor *probs() const {
@@ -1199,7 +1327,7 @@ inline flatbuffers::Offset<Categorical> CreateCategorical(
 }
 
 struct Poisson FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_RATE = 4
   };
   const Tensor *rate() const {
@@ -1236,6 +1364,255 @@ inline flatbuffers::Offset<Poisson> CreatePoisson(
     flatbuffers::Offset<Tensor> rate = 0) {
   PoissonBuilder builder_(_fbb);
   builder_.add_rate(rate);
+  return builder_.Finish();
+}
+
+struct Beta FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_CONCENTRATION0 = 4,
+    VT_CONCENTRATION1 = 6
+  };
+  const Tensor *concentration0() const {
+    return GetPointer<const Tensor *>(VT_CONCENTRATION0);
+  }
+  const Tensor *concentration1() const {
+    return GetPointer<const Tensor *>(VT_CONCENTRATION1);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_CONCENTRATION0) &&
+           verifier.VerifyTable(concentration0()) &&
+           VerifyOffset(verifier, VT_CONCENTRATION1) &&
+           verifier.VerifyTable(concentration1()) &&
+           verifier.EndTable();
+  }
+};
+
+struct BetaBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_concentration0(flatbuffers::Offset<Tensor> concentration0) {
+    fbb_.AddOffset(Beta::VT_CONCENTRATION0, concentration0);
+  }
+  void add_concentration1(flatbuffers::Offset<Tensor> concentration1) {
+    fbb_.AddOffset(Beta::VT_CONCENTRATION1, concentration1);
+  }
+  explicit BetaBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  BetaBuilder &operator=(const BetaBuilder &);
+  flatbuffers::Offset<Beta> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = flatbuffers::Offset<Beta>(end);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<Beta> CreateBeta(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    flatbuffers::Offset<Tensor> concentration0 = 0,
+    flatbuffers::Offset<Tensor> concentration1 = 0) {
+  BetaBuilder builder_(_fbb);
+  builder_.add_concentration1(concentration1);
+  builder_.add_concentration0(concentration0);
+  return builder_.Finish();
+}
+
+struct Gamma FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_CONCENTRATION = 4,
+    VT_RATE = 6
+  };
+  const Tensor *concentration() const {
+    return GetPointer<const Tensor *>(VT_CONCENTRATION);
+  }
+  const Tensor *rate() const {
+    return GetPointer<const Tensor *>(VT_RATE);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_CONCENTRATION) &&
+           verifier.VerifyTable(concentration()) &&
+           VerifyOffset(verifier, VT_RATE) &&
+           verifier.VerifyTable(rate()) &&
+           verifier.EndTable();
+  }
+};
+
+struct GammaBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_concentration(flatbuffers::Offset<Tensor> concentration) {
+    fbb_.AddOffset(Gamma::VT_CONCENTRATION, concentration);
+  }
+  void add_rate(flatbuffers::Offset<Tensor> rate) {
+    fbb_.AddOffset(Gamma::VT_RATE, rate);
+  }
+  explicit GammaBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  GammaBuilder &operator=(const GammaBuilder &);
+  flatbuffers::Offset<Gamma> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = flatbuffers::Offset<Gamma>(end);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<Gamma> CreateGamma(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    flatbuffers::Offset<Tensor> concentration = 0,
+    flatbuffers::Offset<Tensor> rate = 0) {
+  GammaBuilder builder_(_fbb);
+  builder_.add_rate(rate);
+  builder_.add_concentration(concentration);
+  return builder_.Finish();
+}
+
+struct LogNormal FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_MEAN = 4,
+    VT_STDDEV = 6
+  };
+  const Tensor *mean() const {
+    return GetPointer<const Tensor *>(VT_MEAN);
+  }
+  const Tensor *stddev() const {
+    return GetPointer<const Tensor *>(VT_STDDEV);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_MEAN) &&
+           verifier.VerifyTable(mean()) &&
+           VerifyOffset(verifier, VT_STDDEV) &&
+           verifier.VerifyTable(stddev()) &&
+           verifier.EndTable();
+  }
+};
+
+struct LogNormalBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_mean(flatbuffers::Offset<Tensor> mean) {
+    fbb_.AddOffset(LogNormal::VT_MEAN, mean);
+  }
+  void add_stddev(flatbuffers::Offset<Tensor> stddev) {
+    fbb_.AddOffset(LogNormal::VT_STDDEV, stddev);
+  }
+  explicit LogNormalBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  LogNormalBuilder &operator=(const LogNormalBuilder &);
+  flatbuffers::Offset<LogNormal> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = flatbuffers::Offset<LogNormal>(end);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<LogNormal> CreateLogNormal(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    flatbuffers::Offset<Tensor> mean = 0,
+    flatbuffers::Offset<Tensor> stddev = 0) {
+  LogNormalBuilder builder_(_fbb);
+  builder_.add_stddev(stddev);
+  builder_.add_mean(mean);
+  return builder_.Finish();
+}
+
+struct Exponential FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_RATE = 4
+  };
+  const Tensor *rate() const {
+    return GetPointer<const Tensor *>(VT_RATE);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_RATE) &&
+           verifier.VerifyTable(rate()) &&
+           verifier.EndTable();
+  }
+};
+
+struct ExponentialBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_rate(flatbuffers::Offset<Tensor> rate) {
+    fbb_.AddOffset(Exponential::VT_RATE, rate);
+  }
+  explicit ExponentialBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ExponentialBuilder &operator=(const ExponentialBuilder &);
+  flatbuffers::Offset<Exponential> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = flatbuffers::Offset<Exponential>(end);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<Exponential> CreateExponential(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    flatbuffers::Offset<Tensor> rate = 0) {
+  ExponentialBuilder builder_(_fbb);
+  builder_.add_rate(rate);
+  return builder_.Finish();
+}
+
+struct Weibull FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_SCALE = 4,
+    VT_CONCETRATION = 6
+  };
+  const Tensor *scale() const {
+    return GetPointer<const Tensor *>(VT_SCALE);
+  }
+  const Tensor *concetration() const {
+    return GetPointer<const Tensor *>(VT_CONCETRATION);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_SCALE) &&
+           verifier.VerifyTable(scale()) &&
+           VerifyOffset(verifier, VT_CONCETRATION) &&
+           verifier.VerifyTable(concetration()) &&
+           verifier.EndTable();
+  }
+};
+
+struct WeibullBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_scale(flatbuffers::Offset<Tensor> scale) {
+    fbb_.AddOffset(Weibull::VT_SCALE, scale);
+  }
+  void add_concetration(flatbuffers::Offset<Tensor> concetration) {
+    fbb_.AddOffset(Weibull::VT_CONCETRATION, concetration);
+  }
+  explicit WeibullBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  WeibullBuilder &operator=(const WeibullBuilder &);
+  flatbuffers::Offset<Weibull> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = flatbuffers::Offset<Weibull>(end);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<Weibull> CreateWeibull(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    flatbuffers::Offset<Tensor> scale = 0,
+    flatbuffers::Offset<Tensor> concetration = 0) {
+  WeibullBuilder builder_(_fbb);
+  builder_.add_concetration(concetration);
+  builder_.add_scale(scale);
   return builder_.Finish();
 }
 
@@ -1323,6 +1700,26 @@ inline bool VerifyDistribution(flatbuffers::Verifier &verifier, const void *obj,
     }
     case Distribution_Poisson: {
       auto ptr = reinterpret_cast<const Poisson *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Distribution_Beta: {
+      auto ptr = reinterpret_cast<const Beta *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Distribution_Gamma: {
+      auto ptr = reinterpret_cast<const Gamma *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Distribution_LogNormal: {
+      auto ptr = reinterpret_cast<const LogNormal *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Distribution_Exponential: {
+      auto ptr = reinterpret_cast<const Exponential *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Distribution_Weibull: {
+      auto ptr = reinterpret_cast<const Weibull *>(obj);
       return verifier.VerifyTable(ptr);
     }
     default: return false;
