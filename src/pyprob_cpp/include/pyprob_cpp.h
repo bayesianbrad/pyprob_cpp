@@ -70,6 +70,65 @@ namespace pyprob_cpp
       xt::xarray<double> sample(const bool control, const bool replace, const std::string& address, const std::string& name);
       void observe(xt::xarray<double> value, const std::string& address, const std::string& name);
     };
+    // added by Bradley
+    class Beta: public Distribution
+    {
+    private:
+      xt::xarray<double> concentration0;
+      xt::xarray<double> concentration1;
+
+    public:
+      Beta(xt::xarray<double> concentration0=xt::xarray<double> {0}, xt::xarray<double> concentration1=xt::xarray<double> {1});
+      xt::xarray<double> sample(const bool control, const bool replace, const std::string& address, const std::string& name);
+      void observe(xt::xarray<double> value, const std::string& address, const std::string& name);
+    };
+
+    class Gamma: public Distribution
+    {
+    private:
+      xt::xarray<double> concentration;
+      xt::xarray<double> rate;
+
+    public:
+      Gamma(xt::xarray<double> concentration=xt::xarray<double> {0}, xt::xarray<double> rate=xt::xarray<double> {1});
+      xt::xarray<double> sample(const bool control, const bool replace, const std::string& address, const std::string& name);
+      void observe(xt::xarray<double> value, const std::string& address, const std::string& name);
+    };
+
+    class LogNormal: public Distribution
+    {
+    private:
+      xt::xarray<double> mean;
+      xt::xarray<double> stddev;
+
+    public:
+      LogNormal(xt::xarray<double> mean=xt::xarray<double> {0}, xt::xarray<double> stddev=xt::xarray<double> {1});
+      xt::xarray<double> sample(const bool control, const bool replace, const std::string& address, const std::string& name);
+      void observe(xt::xarray<double> value, const std::string& address, const std::string& name);
+    };
+
+    class Exponential: public Distribution
+    {
+    private:
+      xt::xarray<double> rate;
+
+    public:
+      Exponential(xt::xarray<double> rate=xt::xarray<double> {0}, xt::xarray<double>);
+      xt::xarray<double> sample(const bool control, const bool replace, const std::string& address, const std::string& name);
+      void observe(xt::xarray<double> value, const std::string& address, const std::string& name);
+    };
+
+    class Weibull: public Distribution
+    {
+    private:
+      xt::xarray<double> scale;
+      xt::xarray<double> concentration;
+
+    public:
+      Beta(xt::xarray<double> scale=xt::xarray<double> {0}, xt::xarray<double> concentration=xt::xarray<double> {1});
+      xt::xarray<double> sample(const bool control, const bool replace, const std::string& address, const std::string& name);
+      void observe(xt::xarray<double> value, const std::string& address, const std::string& name);
+    };
   }
 
   class Model
