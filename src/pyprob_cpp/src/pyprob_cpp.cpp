@@ -276,31 +276,33 @@ namespace pyprob_cpp
       return;
     }
   }
-
-    Beta::Beta(xt::xarray<double> mean, xt::xarray<double> stddev)
+// all distribution after this point added by bradley - 
+// currently  parameter names correspond with pytorch dists
+    Beta::Beta(xt::xarray<double> concentration0, xt::xarray<double> concentration1)
     {
-      this->mean = mean;
-      this->stddev = stddev;
+      this->concentration0 = concentration0;
+      this->concentration1 = concentration1;
     }
-    xt::xarray<double> Beya::sample(const bool control, const bool replace, const std::string& address, const std::string& name)
+    xt::xarray<double> Beta::sample(const bool control, const bool replace, const std::string& address, const std::string& name)
     {
       if (!zmqSocketConnected)
       {
         printf("PPX (C++): Warning: Not connected, sampling locally.\n");
-        auto n = this->mean.size();
+        // bradley: This may have to change for beta 
+        auto n = this->concentration0.size();
         xt::xtensor<double, 1> res(std::array<size_t, 1>{n});
         for (size_t i = 0; i < n; i++)
         {
-          auto mean = this->mean(i);
-          auto stddev = this->stddev(i);
-          res(i) = std::beta_distribution<double>(mean, stddev)(generator);
+          auto mean = this->concentration0(i);
+          auto stddev = this->concentration1(i);
+          res(i) = std::beta_distribution<double>(concentration0, concentration1)(generator);
         }
         return res;
       }
-      auto mean = XTensorToTensor(builder, this->mean);
-      auto stddev = XTensorToTensor(builder, this->stddev);
-      auto normal = ppx::CreateNormal(builder, mean, stddev);
-      auto sample = ppx::CreateSampleDirect(builder, address.c_str(), name.c_str(), ppx::Distribution_Normal, normal.Union(), control, replace);
+      auto concentration0 = XTensorToTensor(builder, this->concentration0);
+      auto concentration1 = XTensorToTensor(builder, this->concentration1);
+      auto beta = ppx::CreateBeta(builder, concentration0, concentration1);
+      auto sample = ppx::CreateSampleDirect(builder, address.c_str(), name.c_str(), ppx::Distribution_Beta, beta.Union(), control, replace);
       auto message_request = ppx::CreateMessage(builder, ppx::MessageBody_Sample, sample.Union());
       sendMessage(message_request);
 
@@ -328,10 +330,10 @@ namespace pyprob_cpp
       flatbuffers::Offset<ppx::Tensor> val = 0;
       if (value(0) != NONE_VALUE)
         val = XTensorToTensor(builder, value);
-      auto mean = XTensorToTensor(builder, this->mean);
-      auto stddev = XTensorToTensor(builder, this->stddev);
-      auto normal = ppx::CreateNormal(builder, mean, stddev);
-      auto observe = ppx::CreateObserveDirect(builder, address.c_str(), name.c_str(), ppx::Distribution_Normal, normal.Union(), val);
+      auto concentration0 = XTensorToTensor(builder, this->concentration0);
+      auto concentration1 = XTensorToTensor(builder, this->concentration1);
+      auto beta = ppx::CreateBeta(builder, concentration0, concentration1);
+      auto observe = ppx::CreateObserveDirect(builder, address.c_str(), name.c_str(), ppx::Distribution_Beta, beta.Union(), val);
       auto message_request = ppx::CreateMessage(builder, ppx::MessageBody_Observe, observe.Union());
       sendMessage(message_request);
 
@@ -341,30 +343,31 @@ namespace pyprob_cpp
       return;
     }
 
-    Gamma::Gamma(xt::xarray<double> mean, xt::xarray<double> stddev)
+    Gamma::Gamma(xt::xarray<double> concentration, xt::xarray<double> rate)
     {
-      this->mean = mean;
-      this->stddev = stddev;
+      this->concentration = concentration;
+      this->rate = rate;
     }
     xt::xarray<double> Gamma::sample(const bool control, const bool replace, const std::string& address, const std::string& name)
     {
       if (!zmqSocketConnected)
       {
         printf("PPX (C++): Warning: Not connected, sampling locally.\n");
-        auto n = this->mean.size();
+        // this may have to change for gamma
+        auto n = this->concentration.size();
         xt::xtensor<double, 1> res(std::array<size_t, 1>{n});
         for (size_t i = 0; i < n; i++)
         {
-          auto mean = this->mean(i);
-          auto stddev = this->stddev(i);
-          res(i) = std::normal_distribution<double>(mean, stddev)(generator);
+          auto concentration = this->concentration(i);
+          auto rate = this->rate(i);
+          res(i) = std::gamma_distribution<double>(concentration, rate)(generator);
         }
         return res;
       }
-      auto mean = XTensorToTensor(builder, this->mean);
-      auto stddev = XTensorToTensor(builder, this->stddev);
-      auto normal = ppx::CreateNormal(builder, mean, stddev);
-      auto sample = ppx::CreateSampleDirect(builder, address.c_str(), name.c_str(), ppx::Distribution_Normal, normal.Union(), control, replace);
+      auto concentration = XTensorToTensor(builder, this->concentration);
+      auto rate = XTensorToTensor(builder, this->rate);
+      auto gamma = ppx::CreateGamma(builder, concentration, rate);
+      auto sample = ppx::CreateSampleDirect(builder, address.c_str(), name.c_str(), ppx::Distribution_Gamma, gamma.Union(), control, replace);
       auto message_request = ppx::CreateMessage(builder, ppx::MessageBody_Sample, sample.Union());
       sendMessage(message_request);
 
@@ -392,10 +395,10 @@ namespace pyprob_cpp
       flatbuffers::Offset<ppx::Tensor> val = 0;
       if (value(0) != NONE_VALUE)
         val = XTensorToTensor(builder, value);
-      auto mean = XTensorToTensor(builder, this->mean);
-      auto stddev = XTensorToTensor(builder, this->stddev);
-      auto normal = ppx::CreateNormal(builder, mean, stddev);
-      auto observe = ppx::CreateObserveDirect(builder, address.c_str(), name.c_str(), ppx::Distribution_Normal, normal.Union(), val);
+      auto concentration = XTensorToTensor(builder, this->concentration);
+      auto rate = XTensorToTensor(builder, this->rate);
+      auto gamma = ppx::CreateGamma(builder, concentration, rate);
+      auto observe = ppx::CreateObserveDirect(builder, address.c_str(), name.c_str(), ppx::Distribution_Gamma, gamma.Union(), val);
       auto message_request = ppx::CreateMessage(builder, ppx::MessageBody_Observe, observe.Union());
       sendMessage(message_request);
 
@@ -421,14 +424,14 @@ namespace pyprob_cpp
         {
           auto mean = this->mean(i);
           auto stddev = this->stddev(i);
-          res(i) = std::normal_distribution<double>(mean, stddev)(generator);
+          res(i) = std::lognormal_distribution<double>(mean, stddev)(generator);
         }
         return res;
       }
       auto mean = XTensorToTensor(builder, this->mean);
       auto stddev = XTensorToTensor(builder, this->stddev);
-      auto normal = ppx::CreateNormal(builder, mean, stddev);
-      auto sample = ppx::CreateSampleDirect(builder, address.c_str(), name.c_str(), ppx::Distribution_Normal, normal.Union(), control, replace);
+      auto lognormal = ppx::CreateLogNormal(builder, mean, stddev);
+      auto sample = ppx::CreateSampleDirect(builder, address.c_str(), name.c_str(), ppx::Distribution_LogNormal, lognormal.Union(), control, replace);
       auto message_request = ppx::CreateMessage(builder, ppx::MessageBody_Sample, sample.Union());
       sendMessage(message_request);
 
@@ -458,8 +461,8 @@ namespace pyprob_cpp
         val = XTensorToTensor(builder, value);
       auto mean = XTensorToTensor(builder, this->mean);
       auto stddev = XTensorToTensor(builder, this->stddev);
-      auto normal = ppx::CreateNormal(builder, mean, stddev);
-      auto observe = ppx::CreateObserveDirect(builder, address.c_str(), name.c_str(), ppx::Distribution_Normal, normal.Union(), val);
+      auto normal = ppx::CreateLogNormal(builder, mean, stddev);
+      auto observe = ppx::CreateObserveDirect(builder, address.c_str(), name.c_str(), ppx::Distribution_LogNormal, lognormal.Union(), val);
       auto message_request = ppx::CreateMessage(builder, ppx::MessageBody_Observe, observe.Union());
       sendMessage(message_request);
 
@@ -482,12 +485,12 @@ namespace pyprob_cpp
         xt::xtensor<double, 1> res(std::array<size_t, 1>{n});
         for (size_t i = 0; i < n; i++)
         {
-          auto mean = this->rate(i);
+          auto rate = this->rate(i);
           res(i) = std::exponential_distribution<double>(rate)(generator);
         }
         return res;
       }
-      auto mean = XTensorToTensor(builder, this->rate);
+      auto rate = XTensorToTensor(builder, this->rate);
       auto exponential = ppx::CreateExponential(builder, rate);
       auto sample = ppx::CreateSampleDirect(builder, address.c_str(), name.c_str(), ppx::Distribution_Exponential, exponential.Union(), control, replace);
       auto message_request = ppx::CreateMessage(builder, ppx::MessageBody_Sample, sample.Union());
@@ -517,8 +520,8 @@ namespace pyprob_cpp
       flatbuffers::Offset<ppx::Tensor> val = 0;
       if (value(0) != NONE_VALUE)
         val = XTensorToTensor(builder, value);
-      auto mean = XTensorToTensor(builder, this->rate);
-      auto normal = ppx::CreateExponential(builder, rate);
+      auto rate = XTensorToTensor(builder, this->rate);
+      auto exponential = ppx::CreateExponential(builder, rate);
       auto observe = ppx::CreateObserveDirect(builder, address.c_str(), name.c_str(), ppx::Distribution_Exponential, exponential.Union(), val);
       auto message_request = ppx::CreateMessage(builder, ppx::MessageBody_Observe, observe.Union());
       sendMessage(message_request);
@@ -529,30 +532,31 @@ namespace pyprob_cpp
       return;
     }
 
-    Weibull::Weibull(xt::xarray<double> mean, xt::xarray<double> stddev)
+    Weibull::Weibull(xt::xarray<double> scale, xt::xarray<double> concentration)
     {
-      this->mean = mean;
-      this->stddev = stddev;
+      this->scale = scale;
+      this->concentration = concentration;
     }
     xt::xarray<double> Weibull::sample(const bool control, const bool replace, const std::string& address, const std::string& name)
     {
       if (!zmqSocketConnected)
       {
         printf("PPX (C++): Warning: Not connected, sampling locally.\n");
-        auto n = this->mean.size();
+        // this may have to chage for weibull
+        auto n = this->scale.size();
         xt::xtensor<double, 1> res(std::array<size_t, 1>{n});
         for (size_t i = 0; i < n; i++)
         {
-          auto mean = this->mean(i);
-          auto stddev = this->stddev(i);
-          res(i) = std::normal_distribution<double>(mean, stddev)(generator);
+          auto scale = this->scale(i);
+          auto concentration = this->concentration(i);
+          res(i) = std::normal_distribution<double>(scale, concentration)(generator);
         }
         return res;
       }
-      auto mean = XTensorToTensor(builder, this->mean);
-      auto stddev = XTensorToTensor(builder, this->stddev);
-      auto normal = ppx::CreateNormal(builder, mean, stddev);
-      auto sample = ppx::CreateSampleDirect(builder, address.c_str(), name.c_str(), ppx::Distribution_Normal, normal.Union(), control, replace);
+      auto scale = XTensorToTensor(builder, this->scale);
+      auto concentration = XTensorToTensor(builder, this->concentration);
+      auto weibull = ppx::CreateWeibull(builder, scale, concentration);
+      auto sample = ppx::CreateSampleDirect(builder, address.c_str(), name.c_str(), ppx::Distribution_Weibull, weibull.Union(), control, replace);
       auto message_request = ppx::CreateMessage(builder, ppx::MessageBody_Sample, sample.Union());
       sendMessage(message_request);
 
@@ -580,10 +584,10 @@ namespace pyprob_cpp
       flatbuffers::Offset<ppx::Tensor> val = 0;
       if (value(0) != NONE_VALUE)
         val = XTensorToTensor(builder, value);
-      auto mean = XTensorToTensor(builder, this->mean);
-      auto stddev = XTensorToTensor(builder, this->stddev);
-      auto normal = ppx::CreateNormal(builder, mean, stddev);
-      auto observe = ppx::CreateObserveDirect(builder, address.c_str(), name.c_str(), ppx::Distribution_Normal, normal.Union(), val);
+      auto scale = XTensorToTensor(builder, this->scale);
+      auto concentration = XTensorToTensor(builder, this->concentration);
+      auto weibull = ppx::CreateWeibull(builder, scale, concentration);
+      auto observe = ppx::CreateObserveDirect(builder, address.c_str(), name.c_str(), ppx::Distribution_Weibull, weibull.Union(), val);
       auto message_request = ppx::CreateMessage(builder, ppx::MessageBody_Observe, observe.Union());
       sendMessage(message_request);
 
