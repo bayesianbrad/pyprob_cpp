@@ -113,7 +113,7 @@ namespace pyprob_cpp
       xt::xarray<double> rate;
 
     public:
-      Exponential(xt::xarray<double> rate=xt::xarray<double> {0}, xt::xarray<double>);
+      Exponential(xt::xarray<double> rate=xt::xarray<double> {0});
       xt::xarray<double> sample(const bool control, const bool replace, const std::string& address, const std::string& name);
       void observe(xt::xarray<double> value, const std::string& address, const std::string& name);
     };
