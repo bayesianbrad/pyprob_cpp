@@ -1,5 +1,5 @@
-// #ifndef pyprob_cpp_H
-// #define pyprob_cpp_H
+#ifndef pyprob_cpp_H
+#define pyprob_cpp_H
 #include <string>
 #include "xtensor/xarray.hpp"
 #include "xtensor/xio.hpp"
@@ -125,7 +125,7 @@ namespace pyprob_cpp
       xt::xarray<double> concentration;
 
     public:
-      Beta(xt::xarray<double> scale=xt::xarray<double> {0}, xt::xarray<double> concentration=xt::xarray<double> {1});
+      Weibull(xt::xarray<double> scale=xt::xarray<double> {0}, xt::xarray<double> concentration=xt::xarray<double> {1});
       xt::xarray<double> sample(const bool control, const bool replace, const std::string& address, const std::string& name);
       void observe(xt::xarray<double> value, const std::string& address, const std::string& name);
     };
@@ -167,4 +167,4 @@ namespace pyprob_cpp
 
   std::string extractAddress();
 }
-//#endif
+#endif
