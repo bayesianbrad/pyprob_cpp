@@ -107,7 +107,6 @@ inline const char * const *EnumNamesMessageBody() {
 }
 
 inline const char *EnumNameMessageBody(MessageBody e) {
-  if (e < MessageBody_NONE || e > MessageBody_Reset) return "";
   const size_t index = static_cast<int>(e);
   return EnumNamesMessageBody()[index];
 }
@@ -212,7 +211,6 @@ inline const char * const *EnumNamesDistribution() {
 }
 
 inline const char *EnumNameDistribution(Distribution e) {
-  if (e < Distribution_NONE || e > Distribution_Weibull) return "";
   const size_t index = static_cast<int>(e);
   return EnumNamesDistribution()[index];
 }
@@ -261,7 +259,7 @@ bool VerifyDistribution(flatbuffers::Verifier &verifier, const void *obj, Distri
 bool VerifyDistributionVector(flatbuffers::Verifier &verifier, const flatbuffers::Vector<flatbuffers::Offset<void>> *values, const flatbuffers::Vector<uint8_t> *types);
 
 struct Message FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+  enum {
     VT_BODY_TYPE = 4,
     VT_BODY = 6
   };
@@ -390,7 +388,7 @@ inline flatbuffers::Offset<Message> CreateMessage(
 }
 
 struct Tensor FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+  enum {
     VT_DATA = 4,
     VT_SHAPE = 6
   };
@@ -445,16 +443,14 @@ inline flatbuffers::Offset<Tensor> CreateTensorDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
     const std::vector<double> *data = nullptr,
     const std::vector<int32_t> *shape = nullptr) {
-  auto data__ = data ? _fbb.CreateVector<double>(*data) : 0;
-  auto shape__ = shape ? _fbb.CreateVector<int32_t>(*shape) : 0;
   return ppx::CreateTensor(
       _fbb,
-      data__,
-      shape__);
+      data ? _fbb.CreateVector<double>(*data) : 0,
+      shape ? _fbb.CreateVector<int32_t>(*shape) : 0);
 }
 
 struct Handshake FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+  enum {
     VT_SYSTEM_NAME = 4
   };
   const flatbuffers::String *system_name() const {
@@ -497,14 +493,13 @@ inline flatbuffers::Offset<Handshake> CreateHandshake(
 inline flatbuffers::Offset<Handshake> CreateHandshakeDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
     const char *system_name = nullptr) {
-  auto system_name__ = system_name ? _fbb.CreateString(system_name) : 0;
   return ppx::CreateHandshake(
       _fbb,
-      system_name__);
+      system_name ? _fbb.CreateString(system_name) : 0);
 }
 
 struct HandshakeResult FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+  enum {
     VT_SYSTEM_NAME = 4,
     VT_MODEL_NAME = 6
   };
@@ -559,12 +554,10 @@ inline flatbuffers::Offset<HandshakeResult> CreateHandshakeResultDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
     const char *system_name = nullptr,
     const char *model_name = nullptr) {
-  auto system_name__ = system_name ? _fbb.CreateString(system_name) : 0;
-  auto model_name__ = model_name ? _fbb.CreateString(model_name) : 0;
   return ppx::CreateHandshakeResult(
       _fbb,
-      system_name__,
-      model_name__);
+      system_name ? _fbb.CreateString(system_name) : 0,
+      model_name ? _fbb.CreateString(model_name) : 0);
 }
 
 struct Run FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
@@ -596,7 +589,7 @@ inline flatbuffers::Offset<Run> CreateRun(
 }
 
 struct RunResult FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+  enum {
     VT_RESULT = 4
   };
   const Tensor *result() const {
@@ -637,7 +630,7 @@ inline flatbuffers::Offset<RunResult> CreateRunResult(
 }
 
 struct Sample FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+  enum {
     VT_ADDRESS = 4,
     VT_NAME = 6,
     VT_DISTRIBUTION_TYPE = 8,
@@ -801,12 +794,10 @@ inline flatbuffers::Offset<Sample> CreateSampleDirect(
     flatbuffers::Offset<void> distribution = 0,
     bool control = true,
     bool replace = false) {
-  auto address__ = address ? _fbb.CreateString(address) : 0;
-  auto name__ = name ? _fbb.CreateString(name) : 0;
   return ppx::CreateSample(
       _fbb,
-      address__,
-      name__,
+      address ? _fbb.CreateString(address) : 0,
+      name ? _fbb.CreateString(name) : 0,
       distribution_type,
       distribution,
       control,
@@ -814,7 +805,7 @@ inline flatbuffers::Offset<Sample> CreateSampleDirect(
 }
 
 struct SampleResult FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+  enum {
     VT_RESULT = 4
   };
   const Tensor *result() const {
@@ -855,7 +846,7 @@ inline flatbuffers::Offset<SampleResult> CreateSampleResult(
 }
 
 struct Observe FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+  enum {
     VT_ADDRESS = 4,
     VT_NAME = 6,
     VT_DISTRIBUTION_TYPE = 8,
@@ -1009,12 +1000,10 @@ inline flatbuffers::Offset<Observe> CreateObserveDirect(
     Distribution distribution_type = Distribution_NONE,
     flatbuffers::Offset<void> distribution = 0,
     flatbuffers::Offset<Tensor> value = 0) {
-  auto address__ = address ? _fbb.CreateString(address) : 0;
-  auto name__ = name ? _fbb.CreateString(name) : 0;
   return ppx::CreateObserve(
       _fbb,
-      address__,
-      name__,
+      address ? _fbb.CreateString(address) : 0,
+      name ? _fbb.CreateString(name) : 0,
       distribution_type,
       distribution,
       value);
@@ -1049,7 +1038,7 @@ inline flatbuffers::Offset<ObserveResult> CreateObserveResult(
 }
 
 struct Tag FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+  enum {
     VT_ADDRESS = 4,
     VT_NAME = 6,
     VT_VALUE = 8
@@ -1116,12 +1105,10 @@ inline flatbuffers::Offset<Tag> CreateTagDirect(
     const char *address = nullptr,
     const char *name = nullptr,
     flatbuffers::Offset<Tensor> value = 0) {
-  auto address__ = address ? _fbb.CreateString(address) : 0;
-  auto name__ = name ? _fbb.CreateString(name) : 0;
   return ppx::CreateTag(
       _fbb,
-      address__,
-      name__,
+      address ? _fbb.CreateString(address) : 0,
+      name ? _fbb.CreateString(name) : 0,
       value);
 }
 
@@ -1182,7 +1169,7 @@ inline flatbuffers::Offset<Reset> CreateReset(
 }
 
 struct Normal FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+  enum {
     VT_MEAN = 4,
     VT_STDDEV = 6
   };
@@ -1234,7 +1221,7 @@ inline flatbuffers::Offset<Normal> CreateNormal(
 }
 
 struct Uniform FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+  enum {
     VT_LOW = 4,
     VT_HIGH = 6
   };
@@ -1286,7 +1273,7 @@ inline flatbuffers::Offset<Uniform> CreateUniform(
 }
 
 struct Categorical FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+  enum {
     VT_PROBS = 4
   };
   const Tensor *probs() const {
@@ -1327,7 +1314,7 @@ inline flatbuffers::Offset<Categorical> CreateCategorical(
 }
 
 struct Poisson FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+  enum {
     VT_RATE = 4
   };
   const Tensor *rate() const {
@@ -1368,7 +1355,7 @@ inline flatbuffers::Offset<Poisson> CreatePoisson(
 }
 
 struct Beta FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+  enum {
     VT_CONCENTRATION0 = 4,
     VT_CONCENTRATION1 = 6
   };
@@ -1420,7 +1407,7 @@ inline flatbuffers::Offset<Beta> CreateBeta(
 }
 
 struct Gamma FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+  enum {
     VT_CONCENTRATION = 4,
     VT_RATE = 6
   };
@@ -1472,7 +1459,7 @@ inline flatbuffers::Offset<Gamma> CreateGamma(
 }
 
 struct LogNormal FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+  enum {
     VT_MEAN = 4,
     VT_STDDEV = 6
   };
@@ -1524,7 +1511,7 @@ inline flatbuffers::Offset<LogNormal> CreateLogNormal(
 }
 
 struct Exponential FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+  enum {
     VT_RATE = 4
   };
   const Tensor *rate() const {
@@ -1565,7 +1552,7 @@ inline flatbuffers::Offset<Exponential> CreateExponential(
 }
 
 struct Weibull FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+  enum {
     VT_SCALE = 4,
     VT_CONCETRATION = 6
   };
