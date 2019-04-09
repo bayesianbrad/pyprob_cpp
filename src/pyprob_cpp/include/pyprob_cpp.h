@@ -129,7 +129,7 @@ namespace pyprob_cpp
       xt::xarray<double> sample(const bool control, const bool replace, const std::string& address, const std::string& name);
       void observe(xt::xarray<double> value, const std::string& address, const std::string& name);
     };
-  }
+  };
 
   class Model
   {
