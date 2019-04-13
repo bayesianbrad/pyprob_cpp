@@ -431,7 +431,7 @@ namespace pyprob_cpp
       }
       auto mean = XTensorToTensor(builder, this->mean);
       auto stddev = XTensorToTensor(builder, this->stddev);
-      auto lognormal = ppx::CreateLogNormal(builder, mean, stddev);
+      auto log_normal = ppx::CreateLogNormal(builder, mean, stddev);
       auto sample = ppx::CreateSampleDirect(builder, address.c_str(), name.c_str(), ppx::Distribution_LogNormal, lognormal.Union(), control, replace);
       auto message_request = ppx::CreateMessage(builder, ppx::MessageBody_Sample, sample.Union());
       sendMessage(message_request);
@@ -462,8 +462,8 @@ namespace pyprob_cpp
         val = XTensorToTensor(builder, value);
       auto mean = XTensorToTensor(builder, this->mean);
       auto stddev = XTensorToTensor(builder, this->stddev);
-      auto lognormal = ppx::CreateLogNormal(builder, mean, stddev);
-      auto observe = ppx::CreateObserveDirect(builder, address.c_str(), name.c_str(), ppx::Distribution_LogNormal, lognormal.Union(), val);
+      auto log_normal = ppx::CreateLogNormal(builder, mean, stddev);
+      auto observe = ppx::CreateObserveDirect(builder, address.c_str(), name.c_str(), ppx::Distribution_LogNormal, log_normal.Union(), val);
       auto message_request = ppx::CreateMessage(builder, ppx::MessageBody_Observe, observe.Union());
       sendMessage(message_request);
 
