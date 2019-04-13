@@ -432,7 +432,7 @@ namespace pyprob_cpp
       auto mean = XTensorToTensor(builder, this->mean);
       auto stddev = XTensorToTensor(builder, this->stddev);
       auto log_normal = ppx::CreateLogNormal(builder, mean, stddev);
-      auto sample = ppx::CreateSampleDirect(builder, address.c_str(), name.c_str(), ppx::Distribution_LogNormal, lognormal.Union(), control, replace);
+      auto sample = ppx::CreateSampleDirect(builder, address.c_str(), name.c_str(), ppx::Distribution_LogNormal, log_normal.Union(), control, replace);
       auto message_request = ppx::CreateMessage(builder, ppx::MessageBody_Sample, sample.Union());
       sendMessage(message_request);
 
