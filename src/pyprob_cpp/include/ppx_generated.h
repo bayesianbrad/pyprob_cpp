@@ -42,8 +42,6 @@ struct Categorical;
 
 struct Poisson;
 
-struct Beta;
-
 struct Gamma;
 
 struct LogNormal;
@@ -168,23 +166,21 @@ enum Distribution {
   Distribution_Uniform = 2,
   Distribution_Categorical = 3,
   Distribution_Poisson = 4,
-  Distribution_Beta = 5,
-  Distribution_Gamma = 6,
-  Distribution_LogNormal = 7,
-  Distribution_Exponential = 8,
-  Distribution_Weibull = 9,
+  Distribution_Gamma = 5,
+  Distribution_LogNormal = 6,
+  Distribution_Exponential = 7,
+  Distribution_Weibull = 8,
   Distribution_MIN = Distribution_NONE,
   Distribution_MAX = Distribution_Weibull
 };
 
-inline const Distribution (&EnumValuesDistribution())[10] {
+inline const Distribution (&EnumValuesDistribution())[9] {
   static const Distribution values[] = {
     Distribution_NONE,
     Distribution_Normal,
     Distribution_Uniform,
     Distribution_Categorical,
     Distribution_Poisson,
-    Distribution_Beta,
     Distribution_Gamma,
     Distribution_LogNormal,
     Distribution_Exponential,
@@ -200,7 +196,6 @@ inline const char * const *EnumNamesDistribution() {
     "Uniform",
     "Categorical",
     "Poisson",
-    "Beta",
     "Gamma",
     "LogNormal",
     "Exponential",
@@ -233,10 +228,6 @@ template<> struct DistributionTraits<Categorical> {
 
 template<> struct DistributionTraits<Poisson> {
   static const Distribution enum_value = Distribution_Poisson;
-};
-
-template<> struct DistributionTraits<Beta> {
-  static const Distribution enum_value = Distribution_Beta;
 };
 
 template<> struct DistributionTraits<Gamma> {
@@ -663,9 +654,6 @@ struct Sample FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const Poisson *distribution_as_Poisson() const {
     return distribution_type() == Distribution_Poisson ? static_cast<const Poisson *>(distribution()) : nullptr;
   }
-  const Beta *distribution_as_Beta() const {
-    return distribution_type() == Distribution_Beta ? static_cast<const Beta *>(distribution()) : nullptr;
-  }
   const Gamma *distribution_as_Gamma() const {
     return distribution_type() == Distribution_Gamma ? static_cast<const Gamma *>(distribution()) : nullptr;
   }
@@ -713,10 +701,6 @@ template<> inline const Categorical *Sample::distribution_as<Categorical>() cons
 
 template<> inline const Poisson *Sample::distribution_as<Poisson>() const {
   return distribution_as_Poisson();
-}
-
-template<> inline const Beta *Sample::distribution_as<Beta>() const {
-  return distribution_as_Beta();
 }
 
 template<> inline const Gamma *Sample::distribution_as<Gamma>() const {
@@ -878,9 +862,6 @@ struct Observe FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const Poisson *distribution_as_Poisson() const {
     return distribution_type() == Distribution_Poisson ? static_cast<const Poisson *>(distribution()) : nullptr;
   }
-  const Beta *distribution_as_Beta() const {
-    return distribution_type() == Distribution_Beta ? static_cast<const Beta *>(distribution()) : nullptr;
-  }
   const Gamma *distribution_as_Gamma() const {
     return distribution_type() == Distribution_Gamma ? static_cast<const Gamma *>(distribution()) : nullptr;
   }
@@ -925,10 +906,6 @@ template<> inline const Categorical *Observe::distribution_as<Categorical>() con
 
 template<> inline const Poisson *Observe::distribution_as<Poisson>() const {
   return distribution_as_Poisson();
-}
-
-template<> inline const Beta *Observe::distribution_as<Beta>() const {
-  return distribution_as_Beta();
 }
 
 template<> inline const Gamma *Observe::distribution_as<Gamma>() const {
@@ -1354,58 +1331,6 @@ inline flatbuffers::Offset<Poisson> CreatePoisson(
   return builder_.Finish();
 }
 
-struct Beta FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
-    VT_CONCENTRATION0 = 4,
-    VT_CONCENTRATION1 = 6
-  };
-  const Tensor *concentration0() const {
-    return GetPointer<const Tensor *>(VT_CONCENTRATION0);
-  }
-  const Tensor *concentration1() const {
-    return GetPointer<const Tensor *>(VT_CONCENTRATION1);
-  }
-  bool Verify(flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_CONCENTRATION0) &&
-           verifier.VerifyTable(concentration0()) &&
-           VerifyOffset(verifier, VT_CONCENTRATION1) &&
-           verifier.VerifyTable(concentration1()) &&
-           verifier.EndTable();
-  }
-};
-
-struct BetaBuilder {
-  flatbuffers::FlatBufferBuilder &fbb_;
-  flatbuffers::uoffset_t start_;
-  void add_concentration0(flatbuffers::Offset<Tensor> concentration0) {
-    fbb_.AddOffset(Beta::VT_CONCENTRATION0, concentration0);
-  }
-  void add_concentration1(flatbuffers::Offset<Tensor> concentration1) {
-    fbb_.AddOffset(Beta::VT_CONCENTRATION1, concentration1);
-  }
-  explicit BetaBuilder(flatbuffers::FlatBufferBuilder &_fbb)
-        : fbb_(_fbb) {
-    start_ = fbb_.StartTable();
-  }
-  BetaBuilder &operator=(const BetaBuilder &);
-  flatbuffers::Offset<Beta> Finish() {
-    const auto end = fbb_.EndTable(start_);
-    auto o = flatbuffers::Offset<Beta>(end);
-    return o;
-  }
-};
-
-inline flatbuffers::Offset<Beta> CreateBeta(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<Tensor> concentration0 = 0,
-    flatbuffers::Offset<Tensor> concentration1 = 0) {
-  BetaBuilder builder_(_fbb);
-  builder_.add_concentration1(concentration1);
-  builder_.add_concentration0(concentration0);
-  return builder_.Finish();
-}
-
 struct Gamma FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
     VT_CONCENTRATION = 4,
@@ -1687,10 +1612,6 @@ inline bool VerifyDistribution(flatbuffers::Verifier &verifier, const void *obj,
     }
     case Distribution_Poisson: {
       auto ptr = reinterpret_cast<const Poisson *>(obj);
-      return verifier.VerifyTable(ptr);
-    }
-    case Distribution_Beta: {
-      auto ptr = reinterpret_cast<const Beta *>(obj);
       return verifier.VerifyTable(ptr);
     }
     case Distribution_Gamma: {
