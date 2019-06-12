@@ -18,6 +18,7 @@ namespace pyprob_cpp
   std::default_random_engine generator;
   zmq::context_t zmqContext = zmq::context_t(1);
   zmq::socket_t zmqSocket = zmq::socket_t(zmqContext, ZMQ_REP);
+  bool localSampling = false;
   bool zmqSocketConnected = false;
   flatbuffers::FlatBufferBuilder builder;
   bool defaultControl = true;
@@ -42,9 +43,9 @@ namespace pyprob_cpp
     xt::xarray<double> Uniform::sample(const bool control, const bool replace, const std::string& address, const std::string& name)
     {
 
-      if (!zmqSocketConnected)
+      if (!zmqSocketConnected || localSampling)
       {
-        printf("PPX (C++): Warning: Not connected, sampling locally.\n");
+        printf("PPX (C++): Sampling locally.\n");
         auto n = this->low.size();
         xt::xtensor<double, 1> res(std::array<size_t, 1>{n});
         for (size_t i = 0; i < n; i++)
@@ -78,7 +79,7 @@ namespace pyprob_cpp
     }
     void Uniform::observe(xt::xarray<double> value, const std::string& address, const std::string& name)
     {
-      if (!zmqSocketConnected)
+      if (!zmqSocketConnected || localSampling)
       {
         printf("PPX (C++): Warning: Not connected, observing locally.\n");
         return;
@@ -106,9 +107,9 @@ namespace pyprob_cpp
     }
     xt::xarray<double> Normal::sample(const bool control, const bool replace, const std::string& address, const std::string& name)
     {
-      if (!zmqSocketConnected)
+      if (!zmqSocketConnected || localSampling)
       {
-        printf("PPX (C++): Warning: Not connected, sampling locally.\n");
+        printf("PPX (C++): Sampling locally.\n");
         auto n = this->mean.size();
         xt::xtensor<double, 1> res(std::array<size_t, 1>{n});
         for (size_t i = 0; i < n; i++)
@@ -142,7 +143,7 @@ namespace pyprob_cpp
     }
     void Normal::observe(xt::xarray<double> value, const std::string& address, const std::string& name)
     {
-      if (!zmqSocketConnected)
+      if (!zmqSocketConnected || localSampling)
       {
         printf("PPX (C++): Warning: Not connected, observing locally.\n");
         return;
@@ -169,9 +170,9 @@ namespace pyprob_cpp
     }
     xt::xarray<double> Categorical::sample(const bool control, const bool replace, const std::string& address, const std::string& name)
     {
-      if (!zmqSocketConnected)
+      if (!zmqSocketConnected || localSampling)
       {
-        printf("PPX (C++): Warning: Not connected, sampling locally.\n");
+        printf("PPX (C++): Sampling locally.\n");
         auto res = std::discrete_distribution<int>(this->probs.storage().begin(), this->probs.storage().end())(generator);
         return res;
       }
@@ -197,7 +198,7 @@ namespace pyprob_cpp
     }
     void Categorical::observe(xt::xarray<double> value, const std::string& address, const std::string& name)
     {
-      if (!zmqSocketConnected)
+      if (!zmqSocketConnected || localSampling)
       {
         printf("PPX (C++): Warning: Not connected, observing locally.\n");
         return;
@@ -224,9 +225,9 @@ namespace pyprob_cpp
     xt::xarray<double> Poisson::sample(const bool control, const bool replace, const std::string& address, const std::string& name)
     {
 
-      if (!zmqSocketConnected)
+      if (!zmqSocketConnected || localSampling)
       {
-        printf("PPX (C++): Warning: Not connected, sampling locally.\n");
+        printf("PPX (C++): Sampling locally.\n");
         auto n = this->rate.size();
         xt::xtensor<double, 1> res(std::array<size_t, 1>{n});
         for (size_t i = 0; i < n; i++)
@@ -258,7 +259,7 @@ namespace pyprob_cpp
     }
     void Poisson::observe(xt::xarray<double> value, const std::string& address, const std::string& name)
     {
-      if (!zmqSocketConnected)
+      if (!zmqSocketConnected || localSampling)
       {
         printf("PPX (C++): Warning: Not connected, observing locally.\n");
         return;
@@ -277,7 +278,7 @@ namespace pyprob_cpp
       // auto message_reply = ppx::GetMessage(request.data());
       return;
     }
-// all distribution after this point added by bradley - 
+// all distribution after this point added by bradley -
 // currently  parameter names correspond with pytorch dists
     // Beta::Beta(xt::xarray<double> concentration0, xt::xarray<double> concentration1)
     // {
@@ -286,10 +287,10 @@ namespace pyprob_cpp
     // }
     // xt::xarray<double> Beta::sample(const bool control, const bool replace, const std::string& address, const std::string& name)
     // {
-    //   if (!zmqSocketConnected)
+    //   if (!zmqSocketConnected || localSampling)
     //   {
-    //     printf("PPX (C++): Warning: Not connected, sampling locally.\n");
-    //     // bradley: This may have to change for beta 
+    //     printf("PPX (C++): Sampling locally.\n");
+    //     // bradley: This may have to change for beta
     //     auto n = this->concentration0.size();
     //     xt::xtensor<double, 1> res(std::array<size_t, 1>{n});
     //     for (size_t i = 0; i < n; i++)
@@ -323,7 +324,7 @@ namespace pyprob_cpp
     // }
     // void Beta::observe(xt::xarray<double> value, const std::string& address, const std::string& name)
     // {
-    //   if (!zmqSocketConnected)
+    //   if (!zmqSocketConnected || localSampling)
     //   {
     //     printf("PPX (C++): Warning: Not connected, observing locally.\n");
     //     return;
@@ -351,9 +352,9 @@ namespace pyprob_cpp
     }
     xt::xarray<double> Gamma::sample(const bool control, const bool replace, const std::string& address, const std::string& name)
     {
-      if (!zmqSocketConnected)
+      if (!zmqSocketConnected || localSampling)
       {
-        printf("PPX (C++): Warning: Not connected, sampling locally.\n");
+        printf("PPX (C++): Sampling locally.\n");
         // this may have to change for gamma
         auto n = this->concentration.size();
         xt::xtensor<double, 1> res(std::array<size_t, 1>{n});
@@ -388,7 +389,7 @@ namespace pyprob_cpp
     }
     void Gamma::observe(xt::xarray<double> value, const std::string& address, const std::string& name)
     {
-      if (!zmqSocketConnected)
+      if (!zmqSocketConnected || localSampling)
       {
         printf("PPX (C++): Warning: Not connected, observing locally.\n");
         return;
@@ -416,9 +417,9 @@ namespace pyprob_cpp
     }
     xt::xarray<double> LogNormal::sample(const bool control, const bool replace, const std::string& address, const std::string& name)
     {
-      if (!zmqSocketConnected)
+      if (!zmqSocketConnected || localSampling)
       {
-        printf("PPX (C++): Warning: Not connected, sampling locally.\n");
+        printf("PPX (C++): Sampling locally.\n");
         auto n = this->mean.size();
         xt::xtensor<double, 1> res(std::array<size_t, 1>{n});
         for (size_t i = 0; i < n; i++)
@@ -452,7 +453,7 @@ namespace pyprob_cpp
     }
     void LogNormal::observe(xt::xarray<double> value, const std::string& address, const std::string& name)
     {
-      if (!zmqSocketConnected)
+      if (!zmqSocketConnected || localSampling)
       {
         printf("PPX (C++): Warning: Not connected, observing locally.\n");
         return;
@@ -479,9 +480,9 @@ namespace pyprob_cpp
     }
     xt::xarray<double> Exponential::sample(const bool control, const bool replace, const std::string& address, const std::string& name)
     {
-      if (!zmqSocketConnected)
+      if (!zmqSocketConnected || localSampling)
       {
-        printf("PPX (C++): Warning: Not connected, sampling locally.\n");
+        printf("PPX (C++): Sampling locally.\n");
         auto n = this->rate.size();
         xt::xtensor<double, 1> res(std::array<size_t, 1>{n});
         for (size_t i = 0; i < n; i++)
@@ -513,7 +514,7 @@ namespace pyprob_cpp
     }
     void Exponential::observe(xt::xarray<double> value, const std::string& address, const std::string& name)
     {
-      if (!zmqSocketConnected)
+      if (!zmqSocketConnected || localSampling)
       {
         printf("PPX (C++): Warning: Not connected, observing locally.\n");
         return;
@@ -540,9 +541,9 @@ namespace pyprob_cpp
     }
     xt::xarray<double> Weibull::sample(const bool control, const bool replace, const std::string& address, const std::string& name)
     {
-      if (!zmqSocketConnected)
+      if (!zmqSocketConnected || localSampling)
       {
-        printf("PPX (C++): Warning: Not connected, sampling locally.\n");
+        printf("PPX (C++): Sampling locally.\n");
         // this may have to chage for weibull
         auto n = this->scale.size();
         xt::xtensor<double, 1> res(std::array<size_t, 1>{n});
@@ -577,7 +578,7 @@ namespace pyprob_cpp
     }
     void Weibull::observe(xt::xarray<double> value, const std::string& address, const std::string& name)
     {
-      if (!zmqSocketConnected)
+      if (!zmqSocketConnected || localSampling)
       {
         printf("PPX (C++): Warning: Not connected, observing locally.\n");
         return;
@@ -704,7 +705,7 @@ namespace pyprob_cpp
   void tag(xt::xarray<double> value, const std::string& name)
   {
     auto address = extractAddress();
-    if (!zmqSocketConnected)
+    if (!zmqSocketConnected || localSampling)
     {
       printf("PPX (C++): Warning: Not connected, tagging locally.\n");
       return;
@@ -728,6 +729,11 @@ namespace pyprob_cpp
   void setDefaultReplace(bool replace)
   {
     defaultReplace = replace;
+  }
+
+  void setLocal(bool local)
+  {
+    localSampling = local;
   }
 
   xt::xarray<double> TensorToXTensor(const ppx::Tensor* protocolTensor)
@@ -816,7 +822,7 @@ namespace pyprob_cpp
 	else
 	  dpp = dp;
 	char namebuf[1024];
-	snprintf(namebuf, sizeof(namebuf), "%s+0x%lx", dpp, 
+	snprintf(namebuf, sizeof(namebuf), "%s+0x%lx", dpp,
 	    (uint64_t)buffer[j] - (uint64_t)info.dli_saddr);
 	if (dp)
 	  free(dp);

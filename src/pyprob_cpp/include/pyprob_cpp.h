@@ -1,5 +1,6 @@
-#ifndef pyprob_cpp_H
-#define pyprob_cpp_H
+#ifndef PYPROB_CPP_H
+#define PYPROB_CPP_H
+
 #include <string>
 #include "xtensor/xarray.hpp"
 #include "xtensor/xio.hpp"
@@ -7,9 +8,9 @@
 #include <zmq.hpp>
 #include <random>
 
-#define VERSION "0.1.9"
+#define VERSION "0.1.10"
 #define GIT_BRANCH "master"
-#define GIT_COMMIT_HASH "c1960e4"
+#define GIT_COMMIT_HASH "7290be2"
 
 #define NONE_VALUE 17081023.17081023f
 
@@ -67,18 +68,6 @@ namespace pyprob_cpp
 
     public:
       Poisson(xt::xarray<double> rate=0);
-      xt::xarray<double> sample(const bool control, const bool replace, const std::string& address, const std::string& name);
-      void observe(xt::xarray<double> value, const std::string& address, const std::string& name);
-    };
-    // added by Bradley
-    class Beta: public Distribution
-    {
-    private:
-      xt::xarray<double> concentration0;
-      xt::xarray<double> concentration1;
-
-    public:
-      Beta(xt::xarray<double> concentration0=xt::xarray<double> {0}, xt::xarray<double> concentration1=xt::xarray<double> {1});
       xt::xarray<double> sample(const bool control, const bool replace, const std::string& address, const std::string& name);
       void observe(xt::xarray<double> value, const std::string& address, const std::string& name);
     };
@@ -156,6 +145,7 @@ namespace pyprob_cpp
 
   void setDefaultControl(bool control = true);
   void setDefaultReplace(bool replace = false);
+  void setLocal(bool local = false);
 
   xt::xarray<double> TensorToXTensor(const ppx::Tensor* protocolTensor);
 

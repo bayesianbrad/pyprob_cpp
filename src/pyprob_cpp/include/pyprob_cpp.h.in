@@ -71,7 +71,7 @@ namespace pyprob_cpp
       xt::xarray<double> sample(const bool control, const bool replace, const std::string& address, const std::string& name);
       void observe(xt::xarray<double> value, const std::string& address, const std::string& name);
     };
-    
+
     class Gamma: public Distribution
     {
     private:
@@ -145,6 +145,7 @@ namespace pyprob_cpp
 
   void setDefaultControl(bool control = true);
   void setDefaultReplace(bool replace = false);
+  void setLocal(bool local = false);
 
   xt::xarray<double> TensorToXTensor(const ppx::Tensor* protocolTensor);
 
