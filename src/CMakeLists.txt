@@ -8,9 +8,16 @@ set(CMAKE_BUILD_TYPE RelWithDebInfo)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
+set(Boost_USE_STATIC_LIBS OFF)
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_STATIC_RUNTIME OFF)
+
 add_subdirectory(pyprob_cpp)
 include_directories(pyprob_cpp/include)
 
 find_package(ZeroMQ REQUIRED)
 find_package(FlatBuffers REQUIRED)
 find_package(xtensor REQUIRED)
+find_package(Boost REQUIRED)
+
+
