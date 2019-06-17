@@ -10,7 +10,6 @@ RUN mkdir /code
 RUN cd /code && git clone --branch v1.10.0 https://github.com/google/flatbuffers.git && cd flatbuffers && cmake -G "Unix Makefiles" && make install
 RUN cd /code && git clone --branch 0.4.16 https://github.com/QuantStack/xtl.git && cd xtl && cmake . && make install
 RUN cd /code && git clone --branch 0.17.4 https://github.com/QuantStack/xtensor.git && cd xtensor && cmake . && make install
-
 COPY . /code/pyprob_cpp/
 RUN cd /code/pyprob_cpp && rm -rf build && mkdir build && cd build && cmake ../src && cmake --build . && make install
 
