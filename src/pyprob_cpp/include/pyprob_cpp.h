@@ -72,6 +72,18 @@ namespace pyprob_cpp
       void observe(xt::xarray<double> value, const std::string& address, const std::string& name);
     };
 
+    class Beta: public Distribution
+    {
+    private:
+      xt::xarray<double> low;
+      xt::xarray<double> high;
+
+    public:
+      Beta(xt::xarray<double> low=xt::xarray<double> {0}, xt::xarray<double> high=xt::xarray<double> {1});
+      xt::xarray<double> sample(const bool control, const bool replace, const std::string& address, const std::string& name);
+      void observe(xt::xarray<double> value, const std::string& address, const std::string& name);
+    };
+
     class Gamma: public Distribution
     {
     private:
