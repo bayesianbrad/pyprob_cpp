@@ -10,12 +10,14 @@
 
 #include <unordered_map>
 #include <dlfcn.h>
-#include <boost/math/distributions/beta.hpp>
-using namespace boost::math;
+#include <boost/math/distributions.hpp>
+
+
 
 namespace pyprob_cpp
 {
   std::default_random_engine generator;
+//  boost::compute::random::default_random_engine generator
   zmq::context_t zmqContext = zmq::context_t(1);
   zmq::socket_t zmqSocket = zmq::socket_t(zmqContext, ZMQ_REP);
   bool localSampling = false;
@@ -280,70 +282,72 @@ namespace pyprob_cpp
     }
 // all distribution after this point added by bradley -
 // currently  parameter names correspond with pytorch dists
-    // Beta::Beta(xt::xarray<double> concentration0, xt::xarray<double> concentration1)
-    // {
-    //   this->concentration0 = concentration0;
-    //   this->concentration1 = concentration1;
-    // }
-    // xt::xarray<double> Beta::sample(const bool control, const bool replace, const std::string& address, const std::string& name)
-    // {
-    //   if (!zmqSocketConnected || localSampling)
-    //   {
-    //     printf("PPX (C++): Sampling locally.\n");
-    //     // bradley: This may have to change for beta
-    //     auto n = this->concentration0.size();
-    //     xt::xtensor<double, 1> res(std::array<size_t, 1>{n});
-    //     for (size_t i = 0; i < n; i++)
-    //     {
-    //       auto mean = this->concentration0(i);
-    //       auto stddev = this->concentration1(i);
-    //       res(i) = beta_distribution<> beta_distribution(concentration0, concentration1)(generator);
-    //     }
-    //     return res;
-    //   }
-    //   auto concentration0 = XTensorToTensor(builder, this->concentration0);
-    //   auto concentration1 = XTensorToTensor(builder, this->concentration1);
-    //   auto beta = ppx::CreateBeta(builder, concentration0, concentration1);
-    //   auto sample = ppx::CreateSampleDirect(builder, address.c_str(), name.c_str(), ppx::Distribution_Beta, beta.Union(), control, replace);
-    //   auto message_request = ppx::CreateMessage(builder, ppx::MessageBody_Sample, sample.Union());
-    //   sendMessage(message_request);
+//
+//    Beta::Beta(xt::xarray<double> low, xt::xarray<double> high)
+//    {
+//      this->low = low;
+//      this->high = high;
+//    }
+//    xt::xarray<double> Beta::sample(const bool control, const bool replace, const std::string& address, const std::string& name)
+//    {
+//      if (!zmqSocketConnected || localSampling)
+//      {
+//        printf("PPX (C++): Sampling locally.\n");
+//        // this may have to change for beta
+//        auto n = this->low.size();
+//        xt::xtensor<double, 1> res(std::array<size_t, 1>{n});
+//        for (size_t i = 0; i < n; i++)
+//        {
+//          auto low = this->low(i);
+//          auto high = this->high(i);
+//          res(i) = boost::math::beta_distribution<double>(low, high)(generator);
+//        }
+//        return res;
+//      }
+//      auto low = XTensorToTensor(builder, this->low);
+//      auto high = XTensorToTensor(builder, this->high);
+//      auto beta = ppx::CreateBeta(builder, low, high);
+//      auto sample = ppx::CreateSampleDirect(builder, address.c_str(), name.c_str(), ppx::Distribution_Beta, beta.Union(), control, replace);
+//      auto message_request = ppx::CreateMessage(builder, ppx::MessageBody_Sample, sample.Union());
+//      sendMessage(message_request);
+//
+//      zmq::message_t request;
+//      zmqSocket.recv(&request);
+//      auto message_reply = ppx::GetMessage(request.data());
+//      if (message_reply->body_type() == ppx::MessageBody_SampleResult)
+//      {
+//        auto result = TensorToXTensor(message_reply->body_as_SampleResult()->result());
+//        return result;
+//      }
+//      else
+//      {
+//        printf("PPX (C++): Error: Received an unexpected request. Cannot recover.\n");
+//        std::exit(EXIT_FAILURE);
+//      }
+//    }
+//    void Beta::observe(xt::xarray<double> value, const std::string& address, const std::string& name)
+//    {
+//      if (!zmqSocketConnected || localSampling)
+//      {
+//        printf("PPX (C++): Warning: Not connected, observing locally.\n");
+//        return;
+//      }
+//      flatbuffers::Offset<ppx::Tensor> val = 0;
+//      if (value(0) != NONE_VALUE)
+//        val = XTensorToTensor(builder, value);
+//      auto low = XTensorToTensor(builder, this->low);
+//      auto high = XTensorToTensor(builder, this->high);
+//      auto beta = ppx::CreateBeta(builder, low, high);
+//      auto observe = ppx::CreateObserveDirect(builder, address.c_str(), name.c_str(), ppx::Distribution_Beta, beta.Union(), val);
+//      auto message_request = ppx::CreateMessage(builder, ppx::MessageBody_Observe, observe.Union());
+//      sendMessage(message_request);
+//
+//      zmq::message_t request;
+//      zmqSocket.recv(&request);
+//      // auto message_reply = ppx::GetMessage(request.data());
+//      return;
+//    }
 
-    //   zmq::message_t request;
-    //   zmqSocket.recv(&request);
-    //   auto message_reply = ppx::GetMessage(request.data());
-    //   if (message_reply->body_type() == ppx::MessageBody_SampleResult)
-    //   {
-    //     auto result = TensorToXTensor(message_reply->body_as_SampleResult()->result());
-    //     return result;
-    //   }
-    //   else
-    //   {
-    //     printf("PPX (C++): Error: Received an unexpected request. Cannot recover.\n");
-    //     std::exit(EXIT_FAILURE);
-    //   }
-    // }
-    // void Beta::observe(xt::xarray<double> value, const std::string& address, const std::string& name)
-    // {
-    //   if (!zmqSocketConnected || localSampling)
-    //   {
-    //     printf("PPX (C++): Warning: Not connected, observing locally.\n");
-    //     return;
-    //   }
-    //   flatbuffers::Offset<ppx::Tensor> val = 0;
-    //   if (value(0) != NONE_VALUE)
-    //     val = XTensorToTensor(builder, value);
-    //   auto concentration0 = XTensorToTensor(builder, this->concentration0);
-    //   auto concentration1 = XTensorToTensor(builder, this->concentration1);
-    //   auto beta = ppx::CreateBeta(builder, concentration0, concentration1);
-    //   auto observe = ppx::CreateObserveDirect(builder, address.c_str(), name.c_str(), ppx::Distribution_Beta, beta.Union(), val);
-    //   auto message_request = ppx::CreateMessage(builder, ppx::MessageBody_Observe, observe.Union());
-    //   sendMessage(message_request);
-
-    //   zmq::message_t request;
-    //   zmqSocket.recv(&request);
-    //   // auto message_reply = ppx::GetMessage(request.data());
-    //   return;
-    // }
 
     Gamma::Gamma(xt::xarray<double> concentration, xt::xarray<double> rate)
     {
