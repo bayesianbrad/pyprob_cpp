@@ -47,7 +47,7 @@ namespace pyprob_cpp
 
       if (!zmqSocketConnected || localSampling)
       {
-        printf("PPX (C++): Sampling locally.\n");
+        //printf("PPX (C++): Sampling locally.\n");
         auto n = this->low.size();
         xt::xtensor<double, 1> res(std::array<size_t, 1>{n});
         for (size_t i = 0; i < n; i++)
@@ -111,7 +111,7 @@ namespace pyprob_cpp
     {
       if (!zmqSocketConnected || localSampling)
       {
-        printf("PPX (C++): Sampling locally.\n");
+        //printf("PPX (C++): Sampling locally.\n");
         auto n = this->mean.size();
         xt::xtensor<double, 1> res(std::array<size_t, 1>{n});
         for (size_t i = 0; i < n; i++)
@@ -174,7 +174,7 @@ namespace pyprob_cpp
     {
       if (!zmqSocketConnected || localSampling)
       {
-        printf("PPX (C++): Sampling locally.\n");
+        //printf("PPX (C++): Sampling locally.\n");
         auto res = std::discrete_distribution<int>(this->probs.storage().begin(), this->probs.storage().end())(generator);
         return res;
       }
@@ -229,7 +229,7 @@ namespace pyprob_cpp
 
       if (!zmqSocketConnected || localSampling)
       {
-        printf("PPX (C++): Sampling locally.\n");
+        //printf("PPX (C++): Sampling locally.\n");
         auto n = this->rate.size();
         xt::xtensor<double, 1> res(std::array<size_t, 1>{n});
         for (size_t i = 0; i < n; i++)
@@ -292,7 +292,7 @@ namespace pyprob_cpp
 //    {
 //      if (!zmqSocketConnected || localSampling)
 //      {
-//        printf("PPX (C++): Sampling locally.\n");
+//        //printf("PPX (C++): Sampling locally.\n");
 //        // this may have to change for beta
 //        auto n = this->low.size();
 //        xt::xtensor<double, 1> res(std::array<size_t, 1>{n});
@@ -358,7 +358,7 @@ namespace pyprob_cpp
     {
       if (!zmqSocketConnected || localSampling)
       {
-        printf("PPX (C++): Sampling locally.\n");
+        //printf("PPX (C++): Sampling locally.\n");
         // this may have to change for gamma
         auto n = this->concentration.size();
         xt::xtensor<double, 1> res(std::array<size_t, 1>{n});
@@ -423,7 +423,7 @@ namespace pyprob_cpp
     {
       if (!zmqSocketConnected || localSampling)
       {
-        printf("PPX (C++): Sampling locally.\n");
+        //printf("PPX (C++): Sampling locally.\n");
         auto n = this->mean.size();
         xt::xtensor<double, 1> res(std::array<size_t, 1>{n});
         for (size_t i = 0; i < n; i++)
@@ -486,7 +486,7 @@ namespace pyprob_cpp
     {
       if (!zmqSocketConnected || localSampling)
       {
-        printf("PPX (C++): Sampling locally.\n");
+        //printf("PPX (C++): Sampling locally.\n");
         auto n = this->rate.size();
         xt::xtensor<double, 1> res(std::array<size_t, 1>{n});
         for (size_t i = 0; i < n; i++)
@@ -547,7 +547,7 @@ namespace pyprob_cpp
     {
       if (!zmqSocketConnected || localSampling)
       {
-        printf("PPX (C++): Sampling locally.\n");
+        //printf("PPX (C++): Sampling locally.\n");
         // this may have to chage for weibull
         auto n = this->scale.size();
         xt::xtensor<double, 1> res(std::array<size_t, 1>{n});
