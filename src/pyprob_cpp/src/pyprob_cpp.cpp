@@ -735,7 +735,7 @@ namespace pyprob_cpp
     defaultReplace = replace;
   }
 
-  void setLocal(bool local, debug)
+  void setLocal(bool local, bool debug)
   {
 
     if (debug){
