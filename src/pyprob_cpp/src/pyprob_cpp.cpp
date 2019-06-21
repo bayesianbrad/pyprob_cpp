@@ -737,6 +737,8 @@ namespace pyprob_cpp
 
   void setLocal(bool local)
   {
+
+    cout << ' Sampling locally : ' << local ;
     localSampling = local;
   }
 
