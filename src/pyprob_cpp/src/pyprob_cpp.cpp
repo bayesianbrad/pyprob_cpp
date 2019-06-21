@@ -735,10 +735,12 @@ namespace pyprob_cpp
     defaultReplace = replace;
   }
 
-  void setLocal(bool local)
+  void setLocal(bool local, debug)
   {
 
-    printf("Sampling locally : %d\n ",local) ;
+    if (debug){
+        printf("Sampling locally : %d\n ",local) ;
+        }
     localSampling = local;
   }
 
