@@ -157,7 +157,7 @@ namespace pyprob_cpp
 
   void setDefaultControl(bool control = true);
   void setDefaultReplace(bool replace = false);
-  void setLocal(bool local = false);
+  void setLocal(bool local = false, bool debug = false);
 
   xt::xarray<double> TensorToXTensor(const ppx::Tensor* protocolTensor);
 
