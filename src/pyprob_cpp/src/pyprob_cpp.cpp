@@ -740,8 +740,12 @@ namespace pyprob_cpp
 
     if (debug){
         printf("Sampling locally : %d\n ",local) ;
+        localSampling = local;
         }
-    localSampling = local;
+    else{
+        localSampling = local;
+        }
+
   }
 
   xt::xarray<double> TensorToXTensor(const ppx::Tensor* protocolTensor)
